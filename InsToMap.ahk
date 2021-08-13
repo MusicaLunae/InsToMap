@@ -1,64 +1,9 @@
 #Requires AutoHotkey v2.0-
 #SingleInstance Ignore
+#Include "%A_ScriptDir%\Core\VarDeclar.ahk"		; temporary: until settings are stored in INI files
+#Include "%A_ScriptDir%\AHK\FileMenu.ahk"
 #Include "%A_ScriptDir%\AHK\LoadScale.ahk"
-
-
-lowBass := 0
-hiBass := 0
-lowAcc := 0
-hiAcc := 0
-lowMel := 0
-hiMel := 0
-lowCmel := 0
-hiCmel := 0
-low3mel := 0
-hi3mel := 0
-
-
-
-
-; 				VARIABLE DECLARATIONS
-; booleans
-freeToContinue := False
-openFile := False
-editStatus := False
-unsavedChangesBool := False
-
-; integers
-columNo := 1
-chanNo := 0
-keyCount := 0
-totalKeyIndex := 0
-mapperExportInc := 1
-saveOrLoad := 0			; 1 is loading (*.itm, type CSV), 2 is saving (*.itm, type CSV), 3 is import (*.ins, type INI), 4 is export (*.map, type INI)
-selectedRow := 0
-oldKeyVal := 0
-newKeyVal := 0
-
-; maps and arrays
-scaleMap := Map()
-patchNamesSectionArray := Array()
-curRowNoteNameArray := Array()
-curRowChangeArray := Array()
-curRowDivArray := Array()
-curRowChanArray := Array()
-curRowPatchArray := Array()
-settings := Array()
-
-; strings
-currentFileName := ""
-fileToUse := ""
-mapMakerTitle := "InsToMap"
-mapMakerGui := ""
-scaleName := ""
-scaleToImport := ""
-saveFileString := ""
-userRootDir := ""		; root directory of the user, used for selecting files
-changesMade := ""
-
-; column strings
-col1String := ""
-
+#Include "%A_ScriptDir%\AHK\EventHandlers.ahk"
 
 onStart()
 {
@@ -159,25 +104,15 @@ createGui()
 ; Enable drop-file events
 mapMakerGui.OnEvent("DropFiles", gui_DropFiles)
 
-
-
-
-
-
-; store current row values
-editKeyValue.OnEvent("Change", changeCurRowVals(editKeyVal.Value))
-
-editPatchVal.OnEvent("Change", changeStatusBarPatch(editChanVal.Value, editPatchVal.Value)
-
 changeStatusBarPatch(channel, patch)
 {
 	if channel = 10
 	{
-		bottomStatusBar.SetText(patch . " - " . IniRead("A_WorkingDir\Dependencies\Midi Instruments.ini", patchNamesSectionArray[2], patch)
+		bottomStatusBar.SetText(patch . " - " . IniRead("%A_WorkingDir%\Dependencies\Midi Instruments.ini", patchNamesSectionArray[2], patch)
 	}
 	else
 	{
-		bottomStatusBar.SetText(patch . " - " . IniRead("A_WorkingDir\Dependencies\Midi Instruments.ini", patchNamesSectionArray[1], patch)
+		bottomStatusBar.SetText(patch . " - " . IniRead("%A_WorkingDir%\Dependencies\Midi Instruments.ini", patchNamesSectionArray[1], patch)
 	}
 }
 
@@ -189,15 +124,38 @@ changeCurRowVals(selectedRow)
 	storeOldRowVals(oldKeyVal)
 	retrieveNewRowVals(newKeyVal)
 	
-	global curRowNoteName := 
-	global curRowChange :=
-	global curRowDiv :=
-	global curRowChan :=
-	global curRowPatch :=
-	
-	
+	oldKeyVal := editKeyVal.Value
 }
 
+storeOldRowVals(keyVal)
+{
+	; delete the old entries
+	noteNameArray.RemoveAt((keyVal + 1))
+	changeArray.RemoveAt((keyVal + 1))
+	divArray.RemoveAt((keyVal + 1))
+	chanArray.RemoveAt((keyVal + 1))
+	patchArray.RemoveAt((keyVal + 1))
+	
+	; re-add the new entries to the same index
+	noteNameArray.InsertAt((keyVal + 1), editNoteNameVal.Value)
+	changeArray.InsertAt((keyVal + 1), editChangeVal.Value)
+	divArray.InsertAt((keyVal + 1), editDivVal.Value)
+	chanArray.InsertAt((keyVal + 1), editChanVal.Value)
+	patchArray.InsertAt((keyVal + 1), editPatchVal.Value)
+}
+
+retrieveNewRowVals(keyVal)
+{
+	; pre-sets the fields in the group box to reflect the values as already stored in the table
+	editNoteNameVal := noteNameArray[keyVal + 1]
+	editChangeVal := changeArray[keyVal + 1]
+	editDivVal := divArray[keyVal + 1]
+	editChanVal := chanArray[keyVal + 1]
+	editPatchVal := patchArray[keyVal + 1]
+}
+
+
+/* old store/retrieve row vals
 storeOldRowVals(keyVal)
 {
 	scaleTable.Modify((keyVal + 1), "Col2", editNoteNameVal.Value, editChangeVal.Value, editDivVal.Value, editChanVal.Value, editPatchVal.Value)
@@ -212,22 +170,17 @@ retrieveNewRowVals(keyVal)
 	editPatchVal := scaleTable.GetText((keyVal + 1), 6)
 }
 
+*/
 
 
 
-; change events to check for modified files
-editNoteNameVal.OnEvent("Change", unsavedChangesMade())
-editChangeVal.OnEvent("Change", unsavedChangesMade())
-editDivVal.OnEvent("Change", unsavedChangesMade())
-editChanVal.OnEvent("Change", unsavedChangesMade())
-editPatchVal.OnEvent("Change", unsavedChangesMade())
+
 
 
 unsavedChangesMade()
 {
 	if !unsavedChangesBool
 	{
-		unsavedChangesBool := True
 		mapMakerTitle := "* " . mapMakerTitle
 	}
 }
@@ -261,11 +214,6 @@ unsavedChanges(*)
 	unsavedChangesBox.Show()
 }
 
-saveUnsavedChanges()
-{
-	
-}
-
 noSaveUnsavedChanges()
 {
 	global freeToContinue := True
@@ -285,142 +233,7 @@ mapMakerGui.Show()		; display the window
 
 ; MENU FUNCTIONS
 ; File
-{
-; creates a new file
-menuFileNew(*)
-{
-	if unsavedChangesBool
-	{
-		unsavedChanges()
-	}
-	
-	if freeToContinue
-	{
-		mapMakerTitle := "InsToMap - New File"
-		unsavedChangesBool := False
-		setEditStatusFalse()
-		scaleTable.Delete()
-		scaleTable.Show()
-	}
-}
 
-; open an existing itm file
-menuFileOpen(*)
-{
-	mapMakerGui.Opt("+OwnDialogs")			; force the user to dismiss the FileSelect dialog before returning to the main window
-	
-	if unsavedChangesBool
-	{
-		unsavedChanges()
-	}
-	
-	if freeToContinue
-	{
-		saveOrLoad := 1
-		try
-		{
-			selectedFileName := pickFileName(saveOrLoad)
-		}
-		
-		catch Error as err
-		{
-			MsgBox err, "Error"
-			Exit
-		}
-		
-		if selectedFileName = ""	; no file was selected
-			return
-		global currentFileName := readContent(selectedFileName)
-		
-		setEditStatusFalse()
-		setWindowTitle(currentFileName)
-	}
-}
-
-; save an itm file
-menuFileSave(*)
-{
-	if currentFileName = ""
-	{
-		saveOrLoad := 2					; 2 = save itm
-		try
-		{
-			currentFileName := pickFileName(saveOrLoad)			; if no filename has been entererd (new file), pick filename
-		}
-		
-		catch Error as err
-		{
-			MsgBox err, "Error"
-			Exit
-		}
-	}
-	saveContent(currentFileName)
-	global mapMakerTitle := "insToMap - " . currentFileName
-	unsavedChangesBool := False
-}
-
-; save itm file as
-menuFileSaveAs(*)
-{
-	mapMakerGui.Opt("+OwnDialogs")			; force the user to dismiss the FileSelect dialog before returning to the main window
-	saveOrLoad := 2				; 2 = save itm
-	try
-		{
-			selectedFileName := pickFileName(saveOrLoad)
-		}
-		
-		catch Error as err
-		{
-			MsgBox err, "Error"
-			Exit
-		}
-	if selectedFileName = "" 	; No file selected
-		return
-	global currentFileName := saveContent(selectedFileName)
-	global mapMakerTitle := "InsToMap - " . currentFileName
-	unsavedChangesBool := False
-}
-
-; import a new INS file to convert to Mapper
-menuFileImport(*)
-{
-	if unsavedChangesBool
-	{
-		unsavedChanges()
-	}
-	
-	if freeToContinue
-	{
-		scaleToImportFilenameNoPath := ""
-		scaleToImport := actualImport()
-		scaleSplitter(scaleToImport)
-		setEditStatusFalse()
-		SplitPath scaleToImport, &scaleToImportFilenameNoPath
-		bottomStatusBar := scaleToImportFilenameNoPath . " was succesfully imported!"
-	}
-}
-
-; export mapper
-menuFileExport(*)
-{
-	;generateMapper(scaleMap)
-}
-
-; exit the application
-menuFileExit(*)
-{
-	if unsavedChangesBool
-	{
-		unsavedChanges()
-	}
-	
-	if freeToContinue
-	{
-		WinClose()
-	}
-}
-
-}
 
 
 

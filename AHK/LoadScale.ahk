@@ -32,7 +32,9 @@ loadScaleIntoArrays(scale)
 			keyArray.Push((rowNo - 1))			; key index (from 0)
 			noteNameArray.Push(scaleMap[(rowNo -1)])		; note name at key index (from 0)
 			changeArray.Push("")
-			
+			divArray.Push("")
+			chanArray.Push("")
+			patchArray.Push("")
 		}
 		rowNo++
 	}
