@@ -32,13 +32,21 @@ newKeyVal := 0
 
 ; maps and arrays
 scaleMap := Map()
+patchNamesStandardMap := Map()
+patchNamesDrumsMap := Map()
+
+patchNamesDrumsArray := Array()
 patchNamesSectionArray := Array()
+patchNamesStandardArray := Array()
+curRowKeyNumberArray := Array()
 curRowNoteNameArray := Array()
 curRowChangeArray := Array()
 curRowDivArray := Array()
 curRowChanArray := Array()
 curRowPatchArray := Array()
+patchesToAssignArray := Array()
 settings := Array()
+toAssignArray := Array()
 
 ; strings
 currentFileName := ""

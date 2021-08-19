@@ -15,6 +15,7 @@ menuFileNew(*)
 	{
 		mapMakerTitle := "InsToMap - New File"
 		unsavedChangesBool := False
+		oldKeyVal := 0
 		setEditStatusFalse()
 		scaleTable.Delete()
 		scaleTable.Show()
@@ -51,6 +52,7 @@ menuFileOpen(*)
 		
 		setEditStatusFalse()
 		setWindowTitle(currentFileName)
+		oldKeyVal := 0
 	}
 }
 
@@ -113,6 +115,7 @@ menuFileImport(*)
 		scaleSplitter(scaleToImport)
 		setEditStatusFalse()
 		SplitPath scaleToImport, &scaleToImportFilenameNoPath
+		oldKeyVal := 0
 		bottomStatusBar := scaleToImportFilenameNoPath . " was succesfully imported!"
 	}
 }

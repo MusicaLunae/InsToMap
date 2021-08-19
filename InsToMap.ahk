@@ -4,12 +4,13 @@
 #Include "%A_ScriptDir%\AHK\FileMenu.ahk"
 #Include "%A_ScriptDir%\AHK\LoadScale.ahk"
 #Include "%A_ScriptDir%\AHK\EventHandlers.ahk"
+#Include "%A_ScriptDir%\AHK\GuiGeneration.ahk"
 
 onStart()
 {
 	loadSettings()
 	loadPatchNames()
-	createGui()
+	createMainGui()
 }
 
 ; load the program settings
@@ -20,83 +21,51 @@ loadSettings()
 
 loadPatchNames()
 {
-	patchNamesSectionArray := StrSplit(IniRead("A_WorkingDir\Dependencies\Midi Instruments.ini"), "`n")
+	patchNamesSectionArray := StrSplit(IniRead("%A_WorkingDir%\Dependencies\Midi Instruments.ini"), "`n")
+	fillPatchNamesMaps(patchNamesSectionArray)
 }
 
-; Create GUI
-createGui()
+fillPatchNamesMaps(patchSection)
 {
-	mapMakerGui := Gui("+Resize", mapMakerTitle)		; main window GUI
+	fillStandardMap(patchSection[1])
+	fillDrumMap(patchSection[2])
+}
 
-	; Create submenus
-	; File menu
-	fileMenu := Menu()
-	fileMenu.Add("&New", menuFileNew)			; create a new file
-	fileMenu.Add("&Open", menuFileOpen)			; open a working copy of an unexported mapper
-	fileMenu.Add("&Save", menuFileSave)			; save a working copy of the unexported mapper
-	fileMenu.Add("Save &As", menuFileSaveAs)		; save a working copy as the specified filename
-	fileMenu.Add()									; blank line
-	fileMenu.Add("&Import", menuFileImport)		; import an INS file
-	fileMenu.Add("&Export", menuFileExport)		; export as MAP file
-	fileMenu.Add()									; blank line
-	fileMenu.Add("E&xit", menuFileExit)			; exit the program
-
-	; Edit menu
-	editMenu := Menu()
-	editMenu.Add("&Edit Scale", menuEditEditScale)							; Edit the scale, toggle switch with visible checkmark in the menu
-	editMenu.Add("Assign &Patches", menuEditAssignPatches)					; assign patches and values
-	editMenu.Add("Assign &Divisions", menuEditAssignDivisions)				; assign divisions and their note counts
-
-	; Help menu
-	helpMenu := Menu()
-	helpMenu.Add("&About InsToMap", menuHelpAbout)			; About the program
-	helpMenu.Add("&Help Files", menuHelpHelp)				; displays the help files
-
-	; create the main menu bar and add the buttons
-	mainMenuBar := MenuBar()
-	mainMenuBar.Add("&File", fileMenu)			; main file menu
-	mainMenuBar.Add("&Edit", editMenu)			; main edit menu
-	mainMenuBar.Add("&Help", helpMenu)			; main help menu
-
-	; attach the main menu bar to the window
-	mapMakerGui.MenuBar := mainMenuBar()
+fillStandardMap(patchSection[1])
+{
+	mapInc := 1	; incrementer for the map key
+	iniInc := 0	; incrementer for the ini key
+	patchNamesStandardArray.Push("-1 None")
 	
-	; create a table to show the scale
-	scaleTable := mapMakerGui.Add("ListView", "r20 w700 Checked NoSortHdr VScroll HScroll", "Key", "Note Name", "Change to", "Division", "Channel", "Standard patch")
+	patchNamesStandardMap.Capacity := 128
+	loop 128
+	{
+		patchNamesStandardMap[mapInc] := IniRead("%A_WorkingDir%\Dependencies\Midi Instruments.ini", sectionName, iniInc)
+		patchNamesStandardArray.Push(iniInc . " " . IniRead("%A_WorkingDir%\Dependencies\Midi Instruments.ini", sectionName, iniInc))
+		iniInc++
+		mapInc++
+	}
+}
+
+fillDrumMap(sectionName)
+{
+	mapInc := 1	; incrementer for the map key
+	iniInc := 27	; incrementer for the ini key
+	patchNamesDrumsArray.Push("-1 None")
 	
-	; edit the values of the current key
-	editGroupBox := mapMakerGui.Add("GroupBox", "r6 w550 y+25", "Edit values")
+	patchNamesDrumsMap.Capacity := 61
+	loop 61
+	{
+		patchNamesDrumsMap[mapInc] := IniRead("%A_WorkingDir%\Dependencies\Midi Instruments.ini", sectionName, iniInc)
+		patchNamesDrumsArray.Push(iniInc . " " . IniRead("%A_WorkingDir%\Dependencies\Midi Instruments.ini", sectionName, iniInc))
+		iniInc++
+		mapInc++
+	}
+}
 
-	; key selector, col 1
-	editKeyName := mapMakerGui.Add("Text", "xp+5 yp+5", "Key: ")
-	editKeyVal := mapMakerGui.Add("Edit", "r1 vKeyValEdit x+10 Disabled")
-	editKeyBud := mapMakerGui.Add("UpDown", "vKeyValUpDown Range0-127 Section Disabled", 0)
-
-	; edit note name, col 2
-	editNoteNameName := mapMakerGui.Add("Text", "xs", "Note Name: ")
-	editNoteNameVal := mapMakerGui.Add("Edit", "r1 vNoteNameValEdit Limit30 x+10 Section Disabled", curRowNoteNameArray[(editKeyVal + 1)])
-
-	; edit change to, col 3
-	editChangeName := mapMakerGui.Add("Text", "xs", "Change to: ")
-	editChangeVal := mapMakerGui.Add("Edit", "r1 vChangeValEdit x+10 Disabled", curRowChangeArray[(editKeyVal + 1)])
-	editChangeBud := mapMakerGui.Add("UpDown", "vChangeValUpDown Range0-127 Section Disabled")
-
-	; edit note division, col 4
-	editDivName := mapMakerGui.Add("Text", "xs", "Division: ")
-	editDivVal := mapMakerGui.Add("DropDownList", "Choose" . curRowDivArray[(editKeyVal + 1)] . " vDivValEdit x+10 Section Disabled", ["Bass", "Accompaniment", "Melody", "Counter Melody", "Third melody", "Register", "Percussion", "Spare", "Undefined"])
-
-	; edit note channel, col 5
-	editChanName := mapMakerGui.Add("Text", "xs", "Channel: ")
-	editChanVal := mapMakerGui.Add("Edit", "r1 vChanValEdit x+10 Disabled", curRowChanArray[(editKeyVal + 1)])
-	editChanBud := mapMakerGui.Add("UpDown", "vChanValUpDown Range0-15 Section Disabled")
-
-	; edit patch, col 6
-	editPatchName := mapMakerGui.Add("Text", "xs", "Patch: ")
-	editPatchVal := mapMakerGui.Add("Edit", "r1 vPatchValEdit x+10", curRowPatchArray[(editKeyVal + 1)])
-	editPatchBud := mapMakerGui.Add("UpDown", "vPatchValUpDown Range0-127 Section Disabled")
-
-	; show patch name underneath
-	bottomStatusBar := mapMakerGui.Add("StatusBar",, "Welcome to InsToMap")
+patchNamesMapFiller(scale)
+{
+	IniRead("%A_WorkingDir%\Dependencies\Midi Instruments.ini", patchNamesSectionArray
 }
 
 
@@ -117,6 +86,7 @@ changeStatusBarPatch(channel, patch)
 }
 
 
+
 changeCurRowVals(selectedRow)
 {
 	newKeyVal := editKeyVal.Value
@@ -129,29 +99,31 @@ changeCurRowVals(selectedRow)
 
 storeOldRowVals(keyVal)
 {
+	rowNo := keyVal + 1
 	; delete the old entries
-	noteNameArray.RemoveAt((keyVal + 1))
-	changeArray.RemoveAt((keyVal + 1))
-	divArray.RemoveAt((keyVal + 1))
-	chanArray.RemoveAt((keyVal + 1))
-	patchArray.RemoveAt((keyVal + 1))
+	noteNameArray.RemoveAt(rowNo)
+	changeArray.RemoveAt(rowNo)
+	divArray.RemoveAt(rowNo)
+	chanArray.RemoveAt(rowNo)
+	patchArray.RemoveAt(rowNo)
 	
 	; re-add the new entries to the same index
-	noteNameArray.InsertAt((keyVal + 1), editNoteNameVal.Value)
-	changeArray.InsertAt((keyVal + 1), editChangeVal.Value)
-	divArray.InsertAt((keyVal + 1), editDivVal.Value)
-	chanArray.InsertAt((keyVal + 1), editChanVal.Value)
-	patchArray.InsertAt((keyVal + 1), editPatchVal.Value)
+	noteNameArray.InsertAt(rowNo, editNoteNameVal.Value)
+	changeArray.InsertAt(rowNo, editChangeVal.Value)
+	divArray.InsertAt(rowNo, editDivVal.Value)
+	chanArray.InsertAt(rowN), editChanVal.Value)
+	patchArray.InsertAt(rowNo, editPatchVal.Value)
 }
 
 retrieveNewRowVals(keyVal)
 {
-	; pre-sets the fields in the group box to reflect the values as already stored in the table
-	editNoteNameVal := noteNameArray[keyVal + 1]
-	editChangeVal := changeArray[keyVal + 1]
-	editDivVal := divArray[keyVal + 1]
-	editChanVal := chanArray[keyVal + 1]
-	editPatchVal := patchArray[keyVal + 1]
+	rowNo := keyVal + 1
+	; pre-sets the fields in the group box to reflect the values as already stored in the arrays
+	editNoteNameVal := noteNameArray[rowNo]
+	editChangeVal := changeArray[rowNo]
+	editDivVal := divArray[rowNo]
+	editChanVal := chanArray[rowNo]
+	editPatchVal := patchArray[rowNo]
 }
 
 
@@ -182,6 +154,7 @@ unsavedChangesMade()
 	if !unsavedChangesBool
 	{
 		mapMakerTitle := "* " . mapMakerTitle
+		unsavedChangesBool := True
 	}
 }
 
@@ -230,16 +203,8 @@ cancelUnsaveCh()
 mapMakerGui.Show()		; display the window
 
 
-
-; MENU FUNCTIONS
-; File
-
-
-
-
-
 ; Edit
-{
+
 ; edit the scale
 menuEditEditScale()
 {
@@ -253,23 +218,113 @@ menuEditEditScale()
 	}
 }
 
-; assign patches to channels/notes
-menuEditAssignPatches()
-{
-	showPatchesWindow()
-}
-
 
 
 menuEditAssignDivisions()
+
+
+; create window to assign patches to channels/notes
+menuEditAssignPatches()
+{
+	createPatchesWindow()
+	showPatchesWindow()
 }
+
+; updates the To Assign-array
+; patch 0 has index 2 in the standard array, so 2 is subtracted to insert the correct patch
+updateToAssignArray(toUpdate)
+{
+	Switch toUpdate
+	{
+		Case 1:		; bass
+			toAssignArray.RemoveAt(toUpdate)
+			toAssignArray.InsertAt(toUpdate, bassStandardVal.Value - 2)
+		
+		Case 2:		; accomp
+			toAssignArray.RemoveAt(toUpdate)
+			toAssignArray.InsertAt(toUpdate, accompStandardVal.Value - 2)
+		
+		Case 3:		; melody
+			toAssignArray.RemoveAt(toUpdate)
+			toAssignArray.InsertAt(toUpdate, melStandardVal.Value - 2)
+		
+		Case 4:		; counter melody
+			toAssignArray.RemoveAt(toUpdate)
+			toAssignArray.InsertAt(toUpdate, cMelStandardVal.Value - 2)
+		
+		Case 5:		; third melody
+			toAssignArray.RemoveAt(toUpdate)
+			toAssignArray.InsertAt(toUpdate, 3melStandardVal.Value - 2)
+		
+		Default:
+			MsgBox "Default behaviour"
+	}
+}
+
+; actually apply the patch assignments
+applyPatchAssignments()
+{
+	unsavedChangesMade()
+	
+	; add the patches to assign to an array
+	; midi patch 0 is at array index 2, so subtract 2 to get the actual value to assign
+	
+	loop curRowDivArray.Length
+	{
+		Switch curRowDivArray[A_Index]
+		{
+			Case 1:		; bass
+				curRowPatchArray.RemoveAt(A_Index)
+				curRowPatchArray.InsertAt(A_Index, toAssignArray[1])			
+			
+			Case 2:		; accompaniment
+				curRowPatchArray.RemoveAt(A_Index)
+				curRowPatchArray.InsertAt(A_Index, toAssignArray[2])
+			
+			Case 3:		; melody
+				curRowPatchArray.RemoveAt(A_Index)
+				curRowPatchArray.InsertAt(A_Index, toAssignArray[3])
+				
+			Case 4:		; counter melody
+				curRowPatchArray.RemoveAt(A_Index)
+				curRowPatchArray.InsertAt(A_Index, toAssignArray[4])
+			
+			Case 5:		; third melody
+				curRowPatchArray.RemoveAt(A_Index)
+				curRowPatchArray.InsertAt(A_Index, toAssignArray[5])
+			
+			Case 7:		; percussion
+				curRowPatchArray.RemoveAt(A_Index)
+				curRowPatchArray.InsertAt(A_Index, -1)
+			
+			Case 8:		; spare
+				curRowPatchArray.RemoveAt(A_Index)
+				curRowPatchArray.InsertAt(A_Index, -1)
+			
+			Case 9:		; undefined
+				curRowPatchArray.RemoveAt(A_Index)
+				curRowPatchArray.InsertAt(A_Index, -1)
+			
+			Default:
+				MsgBox "Default option"
+		}
+	}
+}
+
+
+
+
+
 
 
 menuHelpAbout()
 menuHelpHelp()
 
 
-
+showPatchesWindow()
+{
+	mapMakerGui.Opt("+Disabled")
+}
 
 
 ;				Actual functions
@@ -449,45 +504,56 @@ actualImport(*)
 ; splits the scale to a map
 scaleSplitter(scaleToSplit)
 {
+	scaleMap.Capacity := 128 ; the scale can contain at most 128 different key-value pairs, indexed from 1
 	global scaleName := IniRead(scaleToSplit)
 	keyCount := 0
+	mapIndex := 1				; initially, mapIndex == keyCount + 1
 	while keyCount < 128
 	{
 		keyName := IniRead(scaleToSplit, scaleName, keyCount, "ERROR")
 		if (keyName = "ERROR")
 		{
-			keyCount--			; make sure keyCount equals the highest numbered key in the scale, including 0
+			totalKeys := keyCount			; total number of keys, indexed from 1
+			scaleMap.Capacity := totalKeys		; set the max amount of key-value pairs to the amount of keys, indexed from 1
 			break
 		}
 		else
 		{
-			scaleMap[keyCount] := keyName
+			scaleMap[mapIndex] := keyName
 			keyCount++
+			mapIndex++
 		}
 	}
 	
-	rowNo := 1		; rowNo = keyCount + 1
-	while rowNo <= (keyCount + 1)
+	keyCount := 0
+	mapIndex := 1		; initially, mapIndex == keyCount + 1
+	
+	while mapIndex <= totalKeys
 	{
-		if (scaleMap[(rowNo - 1)] = "X")
+		if (scaleMap[mapIndex] = "X")
 		{
-			editDivVal.Choose(0)
-			spareKeyImportedDiv := editDivVal.Choose(8)
-			spareKeyImportedNoteName := "Spare"
-			scaleTable.Add(, (keyCount - 1), spareKeyImportedNoteName, "-1", spareKeyImportedDiv, "1", "-1")			; add pre-set spare to scale table
-			curRowDivArray.Push(8)			; add as spare to curRowDivArray
+			; pre-adds all the relevant spare values to the respective curRow arrays
+			curRowKeyNumberArray.Push(keyCount)
+			curRowNoteNameArray.Push("Spare")
+			curRowChangeArray.Push(-1)
+			curRowDivArray.Push(8)
+			curRowChanArray.Push(1)
+			curRowPatchArray.Push(-1)
 		}
 		else
 		{
-			scaleTable.Add(, (keyCount - 1), scaleMap[(keyCount - 1)], "", "", "", "")				; add as key with no other values to scale table
-			curRowDivArray.Push(9)			; add as unspecified to curRowDivArray
+			curRowKeyNumberArray.Push(keyCount)
+			curRowNoteNameArray.Push(scaleMap[mapIndex])
+			curRowChangeArray.Push(0)
+			curRowDivArray.Push(9)
+			curRowChanArray.Push(1)
+			curRowPatchArray.Push(-1)
 		}
-		rowNo++
+		mapIndex++
+		keyCount++
 	}
 	
-	global totalKeyIndex := rowNo
-	
-	MsgBox "Import of " scaleName . " was succesful. " . rowNo . " keys were read", "Import successful", 1
+	MsgBox "Import of " . scaleName . " was succesful. " . totalKeys . " keys were read", "Import successful", 1
 }
 
 setEditStatusFalse()
