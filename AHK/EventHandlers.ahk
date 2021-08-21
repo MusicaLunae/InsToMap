@@ -32,4 +32,8 @@ cMelStandardVal.OnEvent("Change", updateToAssignArray(4))
 
 ; if the Apply button is clicked, unsaved changes flag is up
 applyPatchAssignButton.OnEvent("Click", applyPatchAssignments())
-cancelPatchAssignButton.OnEvent("Click", 
+cancelPatchAssignButton.OnEvent("Click", cancelPatchAssignments())
+
+; div assignment window
+applyDivAssignButton.OnEvent("Click", applyDivAssignment())
+cancelDivAssignButton.OnEvent("Click", cancelDivAssignment())

@@ -231,7 +231,7 @@ menuEditAssignPatches()
 }
 
 ; updates the To Assign-array
-; patch 0 has index 2 in the standard array, so 2 is subtracted to insert the correct patch
+; patch 0 has index 2 in the standard array, so 2 is subtracted to insert the correct patch value
 updateToAssignArray(toUpdate)
 {
 	Switch toUpdate
@@ -264,7 +264,7 @@ updateToAssignArray(toUpdate)
 ; actually apply the patch assignments
 applyPatchAssignments()
 {
-	unsavedChangesMade()
+	unsavedChangesBool := True
 	
 	; add the patches to assign to an array
 	; midi patch 0 is at array index 2, so subtract 2 to get the actual value to assign
@@ -311,9 +311,28 @@ applyPatchAssignments()
 	}
 }
 
+cancelPatchAssignments()
+{
+	if MsgBox("Unapplied changes will be lost.", "Continue?", 1) = "OK"
+	{	
+		patchAssignerGui.Destroy()
+	}
+	else
+	{
+		return
+	}
+}
 
+applyDivAssignment()
+{
+	unsavedChangesBool := True
+	divAssignmentArrayCreation()
+}
 
-
+divAssignmentArrayCreation()
+{
+	bassDivArray.Push(bassNumBud.Value, bassStartVal.Value, bass
+}
 
 
 

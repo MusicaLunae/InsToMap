@@ -114,3 +114,90 @@ createPatchesWindow()
 	applyPatchAssignButton := patchAssignerGui.Add("Button", "Default w80", "&Apply")
 	cancelPatchAssignButton := patchAssignerGui.Add("Button", "w80 xp+m", "&Cancel")
 }
+
+; divisions window
+createDivisionsWindow()
+{
+	divAssignerGui := Gui("+AlwaysOnTop +OwnDialogs +Owner", "Assign notes to divisions in " . mapMakerTitle)
+	
+	divAssignerGroupBox := divAssignerGui.Add("GroupBox", "r47 w500 y+10 vDivAssign", "Assign notes to divisions")
+	
+	scaleScrambledNotImplemented := divAssignerGui.Add("Text", "xp+5 yp+5 Section", "Scales which aren't fully linear are not yet supported.")
+	; if the scale is not linear, divisions have to be pre-set in the main window.
+	scaleScrambledCheck := divAssignerGui.Add("CheckBox", "Disabled Checked 0 xs Section vscaleScrambled", "The scale is not linear")
+	
+	
+	; bass
+	bassGroupBox := divAssignerGui.Add("GroupBox", "r8 w475 yp+5 xp+5", "Bass")
+	
+	bassNumName := divAssignerGui.Add("Text", "xp+5 yp+5 Section", "Number of bass notes: ")
+	bassNumVal := divAssignerGui.Add("Edit", "ys vBassNumVal", 8)
+	bassNumBud := divAssignerGui.Add("UpDown", "vBassNumBud Range1-12")
+	
+	bassStartName := divAssignerGui.Add("Text", "xs Section", "Bass notes start at: ")
+	bassStartVal := divAssignerGui.Add("Edit", "ys vBassStartVal Limit3 Number",)
+	
+	bassDirName := divAssignerGui.Add("Text", "xs Section", "and move: ")
+	bassDirRadio1 := divAssignerGui.Add("Radio", "Group vBassDirRadio", "Upwards")
+	bassDirRadio2 := divAssignerGui.Add("Radio", "", "Downwards")
+	
+	
+	; accompaniment
+	accGroupBox := divAssignerGui.Add("GroupBox", "r8 w475 yp+5 xp+5", "Accompaniment")
+	
+	accNumName := divAssignerGui.Add("Text", "xp+5 yp+5 Section", "Number of accompaniment notes: ")
+	accNumVal := divAssignerGui.Add("Edit", "ys vAccNumVal", 8)
+	accNumBud := divAssignerGui.Add("UpDown", "vAccNumBud Range1-12")
+	
+	accStartName := divAssignerGui.Add("Text", "xs Section", "Accompaniment	notes start at: ")
+	accStartVal := divAssignerGui.Add("Edit", "ys vAccStartVal Limit3 Number",)
+	
+	accDirName := divAssignerGui.Add("Text", "xs Section", "and move: ")
+	accDirRadio1 := divAssignerGui.Add("Radio", "Group vAccDirRadio", "Upwards")
+	accDirRadio2 := divAssignerGui.Add("Radio", "", "Downwards")
+	
+	; melody
+	melGroupBox := divAssignerGui.Add("GroupBox", "r8 w475 yp+5 xp+5", "Melody")
+	
+	melNumName := divAssignerGui.Add("Text", "xp+5 yp+5 Section", "Number of melody notes: ")
+	melNumVal := divAssignerGui.Add("Edit", "ys vMelNumVal", 8)
+	melNumBud := divAssignerGui.Add("UpDown", "vMelNumBud Range1-12")
+	
+	melStartName := divAssignerGui.Add("Text", "xs Section", "Melody notes start at: ")
+	melStartVal := divAssignerGui.Add("Edit", "ys vMelStartVal Limit3 Number",)
+	
+	melDirName := divAssignerGui.Add("Text", "xs Section", "and move: ")
+	melDirRadio1 := divAssignerGui.Add("Radio", "Group vMelDirRadio", "Upwards")
+	melDirRadio2 := divAssignerGui.Add("Radio", "", "Downwards")
+	
+	; counter melody
+	cmelGroupBox := divAssignerGui.Add("GroupBox", "r8 w475 yp+5 xp+5", "Counter Melody")
+	
+	cmelNumName := divAssignerGui.Add("Text", "xp+5 yp+5 Section", "Number of counter melody notes: ")
+	cmelNumVal := divAssignerGui.Add("Edit", "ys vCMelNumVal", 8)
+	cmelNumBud := divAssignerGui.Add("UpDown", "vCMelNumBud Range1-12")
+	
+	cmelStartName := divAssignerGui.Add("Text", "xs Section", "Counter melody notes start at: ")
+	cmelStartVal := divAssignerGui.Add("Edit", "ys vCMelStartVal Limit3 Number",)
+	
+	cmelDirName := divAssignerGui.Add("Text", "xs Section", "and move: ")
+	cmelDirRadio1 := divAssignerGui.Add("Radio", "Group vCMelDirRadio", "Upwards")
+	cmelDirRadio2 := divAssignerGui.Add("Radio", "", "Downwards")
+	
+	; third melody
+	3melGroupBox := divAssignerGui.Add("GroupBox", "r8 w475 yp+5 xp+5", "Third Melody")
+	
+	3melNumName := divAssignerGui.Add("Text", "xp+5 yp+5 Section", "Number of third melody notes: ")
+	3melNumVal := divAssignerGui.Add("Edit", "ys v3MelNumVal", 8)
+	3melNumBud := divAssignerGui.Add("UpDown", "v3MelNumBud Range1-12")
+	
+	3melStartName := divAssignerGui.Add("Text", "xs Section", "Third melody notes start at: ")
+	3melStartVal := divAssignerGui.Add("Edit", "ys v3MelStartVal Limit3 Number",)
+	
+	3melDirName := divAssignerGui.Add("Text", "xs Section", "and move: ")
+	3melDirRadio1 := divAssignerGui.Add("Radio", "Group v3MelDirRadio", "Upwards")
+	3melDirRadio2 := divAssignerGui.Add("Radio", "", "Downwards")
+	
+	applyDivAssignButton := divAssignerGui.Add("Button", "Default w80", "&Apply")
+	cancelDivAssignButton := divAssignerGui.Add("Button", "w80 xp+m", "&Cancel")
+}
